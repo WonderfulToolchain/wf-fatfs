@@ -1994,7 +1994,7 @@ int fprintf (
 			continue;
 		}
 		if (c == 'c') {				/* Type is character */
-			cc = fputc(va_arg(arp, char), fil);
+			cc = fputc(va_arg(arp, int), fil);
 			if (cc != EOF) cc = 1;
 			continue;
 		}
