@@ -393,7 +393,7 @@ BOOL next_dir_entry (	/* TRUE: successful, FALSE: could not move next */
 static
 void get_fileinfo (	/* No return code */
 	FILINFO *finfo, /* Ptr to store the File Information */
-	const BYTE *dir	/* Ptr to the directory entry */
+	BYTE *dir	/* Ptr to the directory entry */
 )
 {
 	BYTE n, c, a;
