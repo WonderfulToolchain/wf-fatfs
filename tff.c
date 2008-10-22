@@ -1037,6 +1037,8 @@ FRESULT f_write (
 		if (wcnt > btw) wcnt = btw;
 		memcpy(&fp->fs->win[fp->fptr % 512U], wbuff, wcnt);
 		fp->fs->winflag = 1;
+		if (((UINT)fp->fptr + wcnt) % 512U == 0         /* Flush sector window when last byte is written */
+			&& !move_window(0)) goto fw_error;
 	}
 
 	if (fp->fptr > fp->fsize) fp->fsize = fp->fptr;	/* Update file size if needed */

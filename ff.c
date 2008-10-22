@@ -1018,6 +1018,11 @@ FRESULT f_write (
 				fp->curr_clust = clust;				/* Update current cluster */
 				fp->csect = 0;						/* Reset sector address in the cluster */
 			}
+			if (fp->flag & FA__DIRTY) {                             /* Write back file I/O buffer prior to following direct transfer */
+				if (disk_write(fp->fs->drive, fp->buffer, fp->curr_sect, 1) != RES_OK)
+					goto fw_error;
+				fp->flag &= (BYTE)~FA__DIRTY;
+			}
 			sect = clust2sect(fp->fs, fp->curr_clust) + fp->csect;	/* Get current sector */
 			cc = btw / SS(fp->fs);					/* When remaining bytes >= sector size, */
 			if (cc) {								/* Write maximum contiguous sectors directly */
@@ -1030,11 +1035,6 @@ FRESULT f_write (
 				continue;
 			}
 			if (sect != fp->curr_sect) {			/* Is window offset changed? */
-				if (fp->flag & FA__DIRTY) {			/* Write back file I/O buffer if needed */
-					if (disk_write(fp->fs->drive, fp->buffer, fp->curr_sect, 1) != RES_OK)
-						goto fw_error;
-					fp->flag &= (BYTE)~FA__DIRTY;
-				}
 				if (fp->fptr < fp->fsize &&  		/* Fill file I/O buffer with file data */
 					disk_read(fp->fs->drive, fp->buffer, sect, 1) != RES_OK)
 						goto fw_error;
