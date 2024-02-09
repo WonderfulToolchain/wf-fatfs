@@ -1724,7 +1724,7 @@ static DWORD clmt_clust (	/* <2:Error, >=2:Cluster number */
 
 	tbl = fp->cltbl + 1;	/* Top of CLMT */
 #if FF_WF_CACHE_CLUSTER_SHIFT
-	cl = (DWORD)(ofs / SS(fs) >> fs->chift); /* Cluster order from top of the file */
+	cl = (DWORD)(ofs / SS(fs) >> fs->cshift); /* Cluster order from top of the file */
 #else
 	cl = (DWORD)(ofs / SS(fs) / fs->csize);	/* Cluster order from top of the file */
 #endif
