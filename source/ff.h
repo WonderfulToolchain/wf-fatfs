@@ -157,6 +157,9 @@ typedef struct {
 	WORD	id;			/* Volume mount ID */
 	WORD	n_rootdir;	/* Number of root directory entries (FAT12/16) */
 	WORD	csize;		/* Cluster size [sectors] */
+#if FF_WF_CACHE_CLUSTER_SHIFT
+	WORD	cshift;		/* Cluster shift */
+#endif
 #if FF_MAX_SS != FF_MIN_SS
 	WORD	ssize;		/* Sector size (512, 1024, 2048 or 4096) */
 #endif
@@ -266,6 +269,9 @@ typedef struct {
 	WORD	crtime;			/* Time of object createion */
 #endif
 	BYTE	fattrib;		/* Object attribute */
+#if FF_WF_FILINFO_LOCATION
+	BYTE	fpdrv;			/* Physical drive ID */
+#endif
 #if FF_USE_LFN
 	TCHAR	altname[FF_SFN_BUF + 1];/* Alternative object name */
 	TCHAR	fname[FF_LFN_BUF + 1];	/* Primary object name */

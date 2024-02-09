@@ -310,7 +310,7 @@
 
 
 /*---------------------------------------------------------------------------/
-/ wf-fatfs Fork Configurations
+/ wf-fatfs Fork Configurations (Optimizations & Tweaks)
 /---------------------------------------------------------------------------*/
 
 #define FF_WF_UNALIGNED_ACCESS 0
@@ -341,6 +341,45 @@
 /
 /  0: Do not optimize this scenario.
 /  1: Optimize this scenario.
+*/
+
+
+#define FF_WF_CACHE_CLUSTER_SHIFT 0
+/* FF_WF_CACHE_CLUSTER_SHIFT controls whether the cluster bitshift value
+/  is cached. This is useful on platforms with slow divisions.
+*/
+
+
+#define FF_WF_MARK_WINDOW_READS 0
+/* FF_WF_MARK_WINDOW_READS allows marking reads done on the FATFS instance's
+/  window (directory/cluster reads) with an "| 0x80" on the pdrv argument
+/  in disk_read(). This can be used as information for sector caching
+/  algorithms.
+*/
+
+
+/*---------------------------------------------------------------------------/
+/ wf-fatfs Fork Configurations (POSIX compatibility improvements)
+/---------------------------------------------------------------------------*/
+
+#define FF_WF_FILINFO_LOCATION 0
+/* FF_WF_FILINFO_LOCATION controls whether or not the FILINFO structure
+/  contains fpdrv (physical drive ID) and fclust (file cluster #) values.
+/
+/  FIXME: This is not currently supported when FF_FS_EXFAT == 1.
+*/
+
+
+#define FF_WF_STAT_ORIGIN_DIRECTORY 0
+/* FF_WF_STAT_ORIGIN_DIRECTORY controls whether or not the origin directory
+/  can pass an f_stat() call.
+*/
+
+
+#define FF_WF_GETFREE_NULL_PATH 0
+/* FF_WF_GETFREE_NULL_PATH controls whether or not f_getfree() can be called
+/  on a FATFS instance directly by passing NULL to path and an instance
+/  in the "return" pointer.
 */
 
 /*--- End of configuration options ---*/
