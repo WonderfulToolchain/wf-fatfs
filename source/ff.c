@@ -592,6 +592,10 @@ static const BYTE Dc936[] = TBL_DC936;
 static const BYTE Dc949[] = TBL_DC949;
 static const BYTE Dc950[] = TBL_DC950;
 
+#elif FF_CODE_PAGE == 1		/* ASCII code page configuration */
+#if FF_LFN_UNICODE > 0
+#error Unicode must be disabled to use ASCII code page
+#endif
 #elif FF_CODE_PAGE < 900	/* Static code page configuration (SBCS) */
 #define CODEPAGE FF_CODE_PAGE
 static const BYTE ExCvt[] = MKCVTBL(TBL_CT, FF_CODE_PAGE);
@@ -822,6 +826,7 @@ static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on
 	WCHAR wc;
 
 	wc = (BYTE)*p++;			/* Get a byte */
+#if FF_CODE_PAGE != 1
 	if (dbc_1st((BYTE)wc)) {	/* Is it a DBC 1st byte? */
 		sb = (BYTE)*p++;		/* Get 2nd byte */
 		if (!dbc_2nd(sb)) return 0xFFFFFFFF;	/* Invalid code? */
@@ -831,6 +836,7 @@ static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on
 		wc = ff_oem2uni(wc, CODEPAGE);	/* ANSI/OEM ==> Unicode */
 		if (wc == 0) return 0xFFFFFFFF;	/* Invalid code? */
 	}
+#endif
 	uc = wc;
 
 #endif
@@ -910,6 +916,9 @@ static UINT put_utf (	/* Returns number of encoding units written (0:buffer over
 #else						/* ANSI/OEM output */
 	WCHAR wc;
 
+#if FF_CODE_PAGE == 1
+	*buf++ = (TCHAR)chr;
+#else
 	wc = ff_uni2oem(chr, CODEPAGE);
 	if (wc >= 0x100) {	/* Is this a DBC? */
 		if (szb < 2) return 0;
@@ -919,6 +928,7 @@ static UINT put_utf (	/* Returns number of encoding units written (0:buffer over
 	}
 	if (wc == 0 || szb < 1) return 0;	/* Invalid character or buffer overflow? */
 	*buf++ = (TCHAR)wc;					/* Store the character */
+#endif
 	return 1;
 #endif
 }
@@ -2806,7 +2816,7 @@ static void get_fileinfo (
 		if (wc == ' ') continue;	/* Skip padding spaces */
 		if (wc == RDDEM) wc = DDEM;	/* Restore replaced DDEM character */
 		if (si == 9 && di < FF_SFN_BUF) fno->altname[di++] = '.';	/* Insert a . if extension is exist */
-#if FF_LFN_UNICODE >= 1	/* Unicode output */
+#if FF_LFN_UNICODE >= 1 && FF_CODE_PAGE != 1	/* Unicode output */
 		if (dbc_1st((BYTE)wc) && si != 8 && si != 11 && dbc_2nd(dp->dir[si])) {	/* Make a DBC if needed */
 			wc = wc << 8 | dp->dir[si++];
 		}
@@ -2893,6 +2903,8 @@ static DWORD get_achar (	/* Get a character and advance ptr */
 	if (IsLower(chr)) chr -= 0x20;		/* To upper ASCII char */
 #if FF_CODE_PAGE == 0
 	if (ExCvt && chr >= 0x80) chr = ExCvt[chr - 0x80];	/* To upper (SBCS extended char) */
+#elif FF_CODE_PAGE == 1
+	/* ASCII code page */
 #elif FF_CODE_PAGE < 900
 	if (chr >= 0x80) chr = ExCvt[chr - 0x80];	/* To upper (SBCS extended char) */
 #endif
@@ -3050,6 +3062,8 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 			} else {		/* In DBCS cfg */
 				wc = ff_uni2oem(ff_wtoupper(wc), CODEPAGE);	/* Unicode ==> Up-convert ==> ANSI/OEM code */
 			}
+#elif FF_CODE_PAGE == 1
+			/* In ASCII cfg, do nothing */
 #elif FF_CODE_PAGE < 900	/* In SBCS cfg */
 			wc = ff_uni2oem(wc, CODEPAGE);			/* Unicode ==> ANSI/OEM code */
 			if (wc & 0x80) wc = ExCvt[wc & 0x7F];	/* Convert extended character to upper (SBCS) */
@@ -3137,6 +3151,8 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 		if (ExCvt && c >= 0x80) {		/* Is SBC extended character? */
 			c = ExCvt[c & 0x7F];		/* To upper SBC extended character */
 		}
+#elif FF_CODE_PAGE == 1
+		/* In ASCII cfg, do nothing */
 #elif FF_CODE_PAGE < 900
 		if (c >= 0x80) {				/* Is SBC extended character? */
 			c = ExCvt[c & 0x7F];		/* To upper SBC extended character */
@@ -5707,7 +5723,7 @@ FRESULT f_getlabel (
 					si = di = 0;		/* Extract volume label from AM_VOL entry */
 					while (si < 11) {
 						wc = dj.dir[si++];
-#if FF_USE_LFN && FF_LFN_UNICODE >= 1 	/* Unicode output */
+#if FF_USE_LFN && FF_LFN_UNICODE >= 1 && FF_CODE_PAGE != 1	/* Unicode output */
 						if (dbc_1st((BYTE)wc) && si < 11) wc = wc << 8 | dj.dir[si++];	/* Is it a DBC? */
 						wc = ff_oem2uni(wc, CODEPAGE);		/* Convert it into Unicode */
 						if (wc == 0) {		/* Invalid char in current code page? */
@@ -5816,6 +5832,8 @@ FRESULT f_setlabel (
 			if (IsLower(wc)) wc -= 0x20;		/* To upper ASCII characters */
 #if FF_CODE_PAGE == 0
 			if (ExCvt && wc >= 0x80) wc = ExCvt[wc - 0x80];	/* To upper extended characters (SBCS cfg) */
+#elif FF_CODE_PAGE == 1
+			/* In ASCII cfg, do nothing */
 #elif FF_CODE_PAGE < 900
 			if (wc >= 0x80) wc = ExCvt[wc - 0x80];	/* To upper extended characters (SBCS cfg) */
 #endif
@@ -6779,7 +6797,11 @@ TCHAR* f_gets (
 			if (rc != 1 || !dbc_2nd(s[0])) continue;	/* Wrong code? */
 			wc = wc << 8 | s[0];
 		}
+#if FF_CODE_PAGE == 1
+		dc = wc;
+#else
 		dc = ff_oem2uni(wc, CODEPAGE);	/* Convert ANSI/OEM into Unicode */
+#endif
 		if (dc == 0) continue;		/* Conversion error? */
 #elif FF_STRF_ENCODE == 1 || FF_STRF_ENCODE == 2 	/* Read a character in UTF-16LE/BE */
 		f_read(fp, s, 2, &rc);		/* Get a code unit */
@@ -7006,7 +7028,9 @@ static void putc_bfd (putbuff* pb, TCHAR c)
 	}
 #else						/* Write a code point in ANSI/OEM */
 	if (hs != 0) return;
+#if FF_CODE_PAGE != 1
 	wc = ff_uni2oem(wc, CODEPAGE);	/* UTF-16 ==> ANSI/OEM */
+#endif
 	if (wc == 0) return;
 	if (wc >= 0x100) {
 		pb->buf[i++] = (BYTE)(wc >> 8); nc++;
