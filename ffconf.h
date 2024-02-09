@@ -309,5 +309,27 @@
 */
 
 
+/*---------------------------------------------------------------------------/
+/ wf-fatfs Fork Configurations
+/---------------------------------------------------------------------------*/
+
+#define FF_WF_UNALIGNED_ACCESS 0
+/* FF_WF_UNALIGNED_ACCESS enables performance optimizations based on certain
+/  CPU architecture assumptions.
+/
+/  0: Any endianness, unaligned access support not required. Slowest.
+/  1: Little-endian, unaligned access support not required.
+/  2: Little-endian, unaligned access support required. Fastest.
+*/
+
+
+#define FF_WF_LIST_DOTDOT 0
+/* FF_WF_LIST_DOTDOT controls whether or not f_readdir() and other functions
+/  expose "." and ".." directory entries.
+/
+/  0: "." and ".." directory entries are hidden.
+/  1: "." and ".." directory entries are exposed.
+*/
+
 
 /*--- End of configuration options ---*/
