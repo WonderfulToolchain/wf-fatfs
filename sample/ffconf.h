@@ -110,6 +110,7 @@
 /   949 - Korean (DBCS)
 /   950 - Traditional Chinese (DBCS)
 /     0 - Include all code pages above and configured by f_setcp()
+/     1 - "ASCII" (Ignore code page conversion)
 */
 
 

@@ -10742,6 +10742,8 @@ WCHAR ff_uni2oem (	/* Returns OEM code character, zero on error */
 	if (uni >= 0x10000) return 0;		/* Surrogate pair: error */
 #if FF_CODE_PAGE == 0
 	return cp < 900 ? uni2oem_sbcs(uni, cp) : uni2oem_dbcs(uni, cp);
+#elif FF_CODE_PAGE == 1
+	return 0;
 #elif FF_CODE_PAGE < 900
 	return uni2oem_sbcs(uni, cp);
 #else
@@ -10764,6 +10766,8 @@ WCHAR ff_oem2uni (	/* Returns Unicode character in UTF-16, zero on error */
 	if (oem < 0x80) return oem;	/* ASCII: pass-through */
 #if FF_CODE_PAGE == 0
 	return cp < 900 ? oem2uni_sbcs(oem, cp) : oem2uni_dbcs(oem, cp);
+#elif FF_CODE_PAGE == 1
+	return 0;
 #elif FF_CODE_PAGE < 900
 	return oem2uni_sbcs(oem, cp);
 #else
@@ -10907,4 +10911,3 @@ DWORD ff_wtoupper (	/* Returns up-converted code point */
 }
 
 #endif /* #if FF_USE_LFN */
-
