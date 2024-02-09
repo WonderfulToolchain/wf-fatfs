@@ -617,20 +617,17 @@ static const BYTE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
 /*-----------------------------------------------------------------------*/
 
 #if FF_WF_UNALIGNED_ACCESS >= 2
-__attribute__((always_inline))
 static inline WORD ld_16 (const BYTE* ptr)	/*	 Load a 2-byte little-endian word */
 {
 	return *((const WORD*) ptr);
 }
 
-__attribute__((always_inline))
 static inline DWORD ld_32 (const BYTE* ptr)	/* Load a 4-byte little-endian word */
 {
 	return *((const DWORD*) ptr);
 }
 
 #if FF_FS_EXFAT
-__attribute__((always_inline))
 static inline QWORD ld_64 (const BYTE* ptr)	/* Load an 8-byte little-endian word */
 {
 	return *((const QWORD*) ptr);
@@ -638,20 +635,17 @@ static inline QWORD ld_64 (const BYTE* ptr)	/* Load an 8-byte little-endian word
 #endif
 
 #if !FF_FS_READONLY
-__attribute__((always_inline))
 static inline void st_16 (BYTE* ptr, WORD val)	/* Store a 2-byte word in little-endian */
 {
 	*((WORD*) ptr) = val;
 }
 
-__attribute__((always_inline))
 static inline void st_32 (BYTE* ptr, DWORD val)	/* Store a 4-byte word in little-endian */
 {
 	*((DWORD*) ptr) = val;
 }
 
 #if FF_FS_EXFAT
-__attribute__((always_inline))
 static inline void st_64 (BYTE* ptr, QWORD val)	/* Store an 8-byte word in little-endian */
 {
 	*((QWORD*) ptr) = val;
