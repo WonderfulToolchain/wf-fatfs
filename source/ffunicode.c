@@ -10432,7 +10432,7 @@ static const WCHAR uc869[] = {	/*  CP869(Greek 2) to Unicode conversion table */
 
 
 
-#if FF_CODE_PAGE < 900
+#if FF_CODE_PAGE < 900 && FF_CODE_PAGE != 1
 /*------------------------------------------------------------------------*/
 /* OEM <==> Unicode Conversions for SBCS                                  */
 /*------------------------------------------------------------------------*/
