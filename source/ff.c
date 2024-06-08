@@ -1944,9 +1944,9 @@ static DWORD ld_clust (	/* Returns the top cluster value of the SFN entry */
 {
 	DWORD cl;
 
-	cl = ld_16(dir + DIR_FstClusLO);
+	cl = lda_16(dir + DIR_FstClusLO);
 	if (fs->fs_type == FS_FAT32) {
-		cl |= (DWORD)ld_16(dir + DIR_FstClusHI) << 16;
+		cl |= (DWORD)lda_16(dir + DIR_FstClusHI) << 16;
 	}
 
 	return cl;
@@ -1960,9 +1960,9 @@ static void st_clust (
 	DWORD cl	/* Value to be set */
 )
 {
-	st_16(dir + DIR_FstClusLO, (WORD)cl);
+	sta_16(dir + DIR_FstClusLO, (WORD)cl);
 	if (fs->fs_type == FS_FAT32) {
-		st_16(dir + DIR_FstClusHI, (WORD)(cl >> 16));
+		sta_16(dir + DIR_FstClusHI, (WORD)(cl >> 16));
 	}
 }
 #endif
@@ -1983,7 +1983,7 @@ static int cmp_lfn (		/* 1:matched, 0:not matched */
 	WCHAR pchr, chr;
 
 
-	if (ld_16(dir + LDIR_FstClusLO) != 0) return 0;	/* Check if LDIR_FstClusLO is 0 */
+	if (lda_16(dir + LDIR_FstClusLO) != 0) return 0;	/* Check if LDIR_FstClusLO is 0 */
 
 	ni = (UINT)((dir[LDIR_Ord] & 0x3F) - 1) * 13;	/* Offset in the name to be compared */
 
@@ -2019,7 +2019,7 @@ static int pick_lfn (	/* 1:succeeded, 0:buffer overflow or invalid LFN entry */
 	WCHAR pchr, chr;
 
 
-	if (ld_16(dir + LDIR_FstClusLO) != 0) return 0;	/* Check if LDIR_FstClusLO is 0 */
+	if (lda_16(dir + LDIR_FstClusLO) != 0) return 0;	/* Check if LDIR_FstClusLO is 0 */
 
 	ni = (UINT)((dir[LDIR_Ord] & ~LLEF) - 1) * 13;	/* Offset in the name buffer */
 
@@ -2062,7 +2062,7 @@ static void put_lfn (
 	dir[LDIR_Chksum] = sum;			/* Set checksum */
 	dir[LDIR_Attr] = AM_LFN;		/* Set attribute */
 	dir[LDIR_Type] = 0;
-	st_16(dir + LDIR_FstClusLO, 0);
+	sta_16(dir + LDIR_FstClusLO, 0);
 
 	ni = (UINT)(ord - 1) * 13;		/* Offset in the name */
 	di = chr = 0;
@@ -2858,12 +2858,12 @@ static void get_fileinfo (
 #endif
 
 	fno->fattrib = dp->dir[DIR_Attr] & AM_MASK;		/* Attribute */
-	fno->fsize = ld_32(dp->dir + DIR_FileSize);		/* Size */
-	fno->ftime = ld_16(dp->dir + DIR_ModTime + 0);	/* Last modified time */
-	fno->fdate = ld_16(dp->dir + DIR_ModTime + 2);	/* Last Modified date */
+	fno->fsize = lda_32(dp->dir + DIR_FileSize);		/* Size */
+	fno->ftime = lda_16(dp->dir + DIR_ModTime + 0);	/* Last modified time */
+	fno->fdate = lda_16(dp->dir + DIR_ModTime + 2);	/* Last Modified date */
 #if FF_FS_CRTIME
-	fno->crtime = ld_16(dp->dir + DIR_CrtTime + 0);	/* Created time */
-	fno->crdate = ld_16(dp->dir + DIR_CrtTime + 2);	/* Created date */
+	fno->crtime = lda_16(dp->dir + DIR_CrtTime + 0);	/* Created time */
+	fno->crdate = lda_16(dp->dir + DIR_CrtTime + 2);	/* Created date */
 #endif
 }
 
@@ -3970,7 +3970,7 @@ FRESULT f_open (
 					cl = ld_clust(fs, dj.dir);			/* Get current cluster chain */
 					dj.dir[DIR_Attr] = AM_ARC;			/* Reset attribute */
 					st_clust(fs, dj.dir, 0);			/* Reset file allocation info */
-					st_32(dj.dir + DIR_FileSize, 0);
+					sta_32(dj.dir + DIR_FileSize, 0);
 					fs->wflag = 1;
 					if (cl != 0) {						/* Remove the cluster chain if exist */
 						LBA_t sc = fs->winsect;
@@ -4025,7 +4025,7 @@ FRESULT f_open (
 #endif
 			{
 				fp->obj.sclust = ld_clust(fs, dj.dir);					/* Get object allocation info */
-				fp->obj.objsize = ld_32(dj.dir + DIR_FileSize);
+				fp->obj.objsize = lda_32(dj.dir + DIR_FileSize);
 			}
 #if FF_USE_FASTSEEK
 			fp->cltbl = 0;		/* Disable fast seek mode */
@@ -4417,9 +4417,9 @@ FRESULT f_sync (
 
 					dir[DIR_Attr] |= AM_ARC;					/* Set archive attribute to indicate that the file has been changed */
 					st_clust(fp->obj.fs, dir, fp->obj.sclust);	/* Update file allocation information  */
-					st_32(dir + DIR_FileSize, (DWORD)fp->obj.objsize);	/* Update file size */
+					sta_32(dir + DIR_FileSize, (DWORD)fp->obj.objsize);	/* Update file size */
 					st_32(dir + DIR_ModTime, GET_FATTIME());	/* Update modified time */
-					st_16(dir + DIR_LstAccDate, 0);				/* Invalidate last access date */
+					sta_16(dir + DIR_LstAccDate, 0);				/* Invalidate last access date */
 					fs->wflag = 1;
 					res = sync_fs(fs);							/* Restore it to the directory */
 					fp->flag &= (BYTE)~FA_MODIFIED;
