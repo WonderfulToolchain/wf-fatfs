@@ -29,6 +29,14 @@ extern "C" {
 #if !defined(FFCONF_DEF)
 #include "ffconf.h"		/* FatFs configuration options */
 #endif
+
+#if !defined(FF_WF_DATA_BUFFER_ADDRESS_SPACE)
+#define FF_WF_DATA_BUFFER_ADDRESS_SPACE
+#endif
+#if !defined(FF_WF_FILINFO_ADDRESS_SPACE)
+#define FF_WF_FILINFO_ADDRESS_SPACE
+#endif
+
 #if FF_DEFINED != FFCONF_DEF
 #error Wrong configuration file (ffconf.h).
 #endif
@@ -331,22 +339,22 @@ typedef enum {
 
 FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode);				/* Open or create a file */
 FRESULT f_close (FIL* fp);											/* Close an open file object */
-FRESULT f_read (FIL* fp, void* buff, UINT btr, UINT* br);			/* Read data from the file */
-FRESULT f_write (FIL* fp, const void* buff, UINT btw, UINT* bw);	/* Write data to the file */
+FRESULT f_read (FIL* fp, void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btr, UINT* br);			/* Read data from the file */
+FRESULT f_write (FIL* fp, const void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btw, UINT* bw);	/* Write data to the file */
 FRESULT f_lseek (FIL* fp, FSIZE_t ofs);								/* Move file pointer of the file object */
 FRESULT f_truncate (FIL* fp);										/* Truncate the file */
 FRESULT f_sync (FIL* fp);											/* Flush cached data of the writing file */
 FRESULT f_opendir (DIR* dp, const TCHAR* path);						/* Open a directory */
 FRESULT f_closedir (DIR* dp);										/* Close an open directory */
-FRESULT f_readdir (DIR* dp, FILINFO* fno);							/* Read a directory item */
-FRESULT f_findfirst (DIR* dp, FILINFO* fno, const TCHAR* path, const TCHAR* pattern);	/* Find first file */
-FRESULT f_findnext (DIR* dp, FILINFO* fno);							/* Find next file */
+FRESULT f_readdir (DIR* dp, FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno);							/* Read a directory item */
+FRESULT f_findfirst (DIR* dp, FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno, const TCHAR* path, const TCHAR* pattern);	/* Find first file */
+FRESULT f_findnext (DIR* dp, FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno);							/* Find next file */
 FRESULT f_mkdir (const TCHAR* path);								/* Create a sub directory */
 FRESULT f_unlink (const TCHAR* path);								/* Delete an existing file or directory */
 FRESULT f_rename (const TCHAR* path_old, const TCHAR* path_new);	/* Rename/Move a file or directory */
-FRESULT f_stat (const TCHAR* path, FILINFO* fno);					/* Get file status */
+FRESULT f_stat (const TCHAR* path, FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno);					/* Get file status */
 FRESULT f_chmod (const TCHAR* path, BYTE attr, BYTE mask);			/* Change attribute of a file/dir */
-FRESULT f_utime (const TCHAR* path, const FILINFO* fno);			/* Change timestamp of a file/dir */
+FRESULT f_utime (const TCHAR* path, const FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno);			/* Change timestamp of a file/dir */
 FRESULT f_chdir (const TCHAR* path);								/* Change current directory */
 FRESULT f_chdrive (const TCHAR* path);								/* Change current drive */
 FRESULT f_getcwd (TCHAR* buff, UINT len);							/* Get current directory */
@@ -360,9 +368,9 @@ FRESULT f_mkfs (const TCHAR* path, const MKFS_PARM* opt, void* work, UINT len);	
 FRESULT f_fdisk (BYTE pdrv, const LBA_t ptbl[], void* work);		/* Divide a physical drive into some partitions */
 FRESULT f_setcp (WORD cp);											/* Set current code page */
 int f_putc (TCHAR c, FIL* fp);										/* Put a character to the file */
-int f_puts (const TCHAR* str, FIL* cp);								/* Put a string to the file */
-int f_printf (FIL* fp, const TCHAR* str, ...);						/* Put a formatted string to the file */
-TCHAR* f_gets (TCHAR* buff, int len, FIL* fp);						/* Get a string from the file */
+int f_puts (const TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* str, FIL* cp);								/* Put a string to the file */
+int f_printf (FIL* fp, const TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* str, ...);						/* Put a formatted string to the file */
+TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* f_gets (TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, int len, FIL* fp);						/* Get a string from the file */
 
 /* Some API fucntions are implemented as macro */
 

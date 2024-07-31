@@ -864,7 +864,7 @@ static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on
 /* Store a Unicode char in defined API encoding */
 static UINT put_utf (	/* Returns number of encoding units written (0:buffer overflow or wrong encoding) */
 	DWORD chr,	/* UTF-16 encoded character (Surrogate pair if >=0x10000) */
-	TCHAR* buf,	/* Output buffer */
+	TCHAR* FF_WF_DATA_BUFFER_ADDRESS_SPACE buf,	/* Output buffer */
 	UINT szb	/* Size of the buffer */
 )
 {
@@ -2736,7 +2736,7 @@ static FRESULT dir_remove (	/* FR_OK:Succeeded, FR_DISK_ERR:A disk error */
 
 static void get_fileinfo (
 	DIR* dp,			/* Pointer to the directory object */
-	FILINFO* fno		/* Pointer to the file information to be filled */
+	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno		/* Pointer to the file information to be filled */
 )
 {
 	UINT si, di;
@@ -4097,7 +4097,7 @@ FRESULT f_open (
 
 FRESULT f_read (
 	FIL* fp, 	/* Open file to be read */
-	void* buff,	/* Data buffer to store the read data */
+	void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff,	/* Data buffer to store the read data */
 	UINT btr,	/* Number of bytes to read */
 	UINT* br	/* Number of bytes read */
 )
@@ -4107,7 +4107,7 @@ FRESULT f_read (
 	LBA_t sect;
 	FSIZE_t remain;
 	UINT rcnt, cc, csect;
-	BYTE *rbuff = (BYTE*)buff;
+	BYTE FF_WF_DATA_BUFFER_ADDRESS_SPACE* rbuff = (BYTE FF_WF_DATA_BUFFER_ADDRESS_SPACE*)buff;
 #if FF_WF_FAST_CONTIGUOUS_READ
 	UINT contiguous_cluster_size;
 	DWORD nextclst, prevclst;
@@ -4223,7 +4223,7 @@ FRESULT f_read (
 
 FRESULT f_write (
 	FIL* fp,			/* Open file to be written */
-	const void* buff,	/* Data to be written */
+	const void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff,	/* Data to be written */
 	UINT btw,			/* Number of bytes to write */
 	UINT* bw			/* Number of bytes written */
 )
@@ -4233,7 +4233,7 @@ FRESULT f_write (
 	DWORD clst;
 	LBA_t sect;
 	UINT wcnt, cc, csect;
-	const BYTE *wbuff = (const BYTE*)buff;
+	const BYTE FF_WF_DATA_BUFFER_ADDRESS_SPACE* wbuff = (const BYTE FF_WF_DATA_BUFFER_ADDRESS_SPACE*)buff;
 #if FF_WF_FAST_CONTIGUOUS_WRITE
 	UINT contiguous_cluster_size;
 	DWORD nextclst, prevclst;
@@ -4963,7 +4963,7 @@ FRESULT f_closedir (
 
 FRESULT f_readdir (
 	DIR* dp,			/* Pointer to the open directory object */
-	FILINFO* fno		/* Pointer to file information to return */
+	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno		/* Pointer to file information to return */
 )
 {
 	FRESULT res;
@@ -5006,7 +5006,7 @@ FRESULT f_readdir (
 
 FRESULT f_findnext (
 	DIR* dp,		/* Pointer to the open directory object */
-	FILINFO* fno	/* Pointer to the file information structure */
+	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno	/* Pointer to the file information structure */
 )
 {
 	FRESULT res;
@@ -5031,7 +5031,7 @@ FRESULT f_findnext (
 
 FRESULT f_findfirst (
 	DIR* dp,				/* Pointer to the blank directory object */
-	FILINFO* fno,			/* Pointer to the file information structure */
+	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno,			/* Pointer to the file information structure */
 	const TCHAR* path,		/* Pointer to the directory to open */
 	const TCHAR* pattern	/* Pointer to the matching pattern */
 )
@@ -5058,7 +5058,7 @@ FRESULT f_findfirst (
 
 FRESULT f_stat (
 	const TCHAR* path,	/* Pointer to the file path */
-	FILINFO* fno		/* Pointer to file information to return */
+	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno		/* Pointer to file information to return */
 )
 {
 	FRESULT res;
@@ -5614,7 +5614,7 @@ FRESULT f_chmod (
 
 FRESULT f_utime (
 	const TCHAR* path,	/* Pointer to the file/directory name */
-	const FILINFO* fno	/* Timestamp to be set */
+	const FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno	/* Timestamp to be set */
 )
 {
 	FRESULT res;
@@ -6768,14 +6768,14 @@ FRESULT f_fdisk (
 /* API: Get a String from the File                                       */
 /*-----------------------------------------------------------------------*/
 
-TCHAR* f_gets (
-	TCHAR* buff,	/* Pointer to the buffer to store read string */
+TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* f_gets (
+	TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff,	/* Pointer to the buffer to store read string */
 	int len,		/* Size of string buffer (items) */
 	FIL* fp			/* Pointer to the file object */
 )
 {
 	int nc = 0;
-	TCHAR *p = buff;
+	TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* p = buff;
 	BYTE s[4];
 	UINT rc;
 	DWORD dc;
@@ -7101,7 +7101,7 @@ int f_putc (
 /*-----------------------------------------------------------------------*/
 
 int f_puts (
-	const TCHAR* str,	/* Pointer to the string to be output */
+	const TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* str,	/* Pointer to the string to be output */
 	FIL* fp				/* Pointer to the file object */
 )
 {
@@ -7245,7 +7245,7 @@ static void ftoa (
 
 int f_printf (
 	FIL* fp,			/* Pointer to the file object */
-	const TCHAR* fmt,	/* Pointer to the format string */
+	const TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* fmt,	/* Pointer to the format string */
 	...					/* Optional arguments... */
 )
 {
@@ -7258,8 +7258,8 @@ int f_printf (
 #else
 	DWORD val;
 #endif
-	TCHAR *tp;
-	TCHAR chr, pad;
+	TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* tp;
+	TCHAR tc, pad;
 	TCHAR nul = 0;
 	char digit, str[SZ_NUM_BUF];
 
@@ -7333,7 +7333,7 @@ int f_printf (
 			continue;
 
 		case 's':					/* String */
-			tp = va_arg(arp, TCHAR*);	/* Get a pointer argument */
+			tp = va_arg(arp, TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE*);	/* Get a pointer argument */
 			if (!tp) tp = &nul;			/* Null pointer generates a null string */
 			for (j = 0; tp[j]; j++) ;	/* j = tcslen(tp) */
 			if (prec >= 0 && j > (UINT)prec) j = (UINT)prec;	/* Limited length of string body */
