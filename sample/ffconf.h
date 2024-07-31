@@ -292,7 +292,6 @@
 /  The FF_FS_TIMEOUT defines timeout period in unit of O/S time tick.
 */
 
-
 /*---------------------------------------------------------------------------/
 / wf-fatfs Fork Configurations (Optimizations)
 /---------------------------------------------------------------------------*/
@@ -368,5 +367,14 @@
 /  on a FATFS instance directly by passing NULL to path and an instance
 /  in the "return" pointer.
 */
+
+/*---------------------------------------------------------------------------/
+/ wf-fatfs Fork Configurations (Other)
+/---------------------------------------------------------------------------*/
+
+/* Address spaces used for certain pointer arguments.
+*/
+#define FF_WF_DATA_BUFFER_ADDRESS_SPACE
+#define FF_WF_FILINFO_ADDRESS_SPACE
 
 /*--- End of configuration options ---*/
