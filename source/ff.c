@@ -514,7 +514,7 @@ static const BYTE GUID_MS_Basic[16] = {0xA2,0xA0,0xD0,0xEB,0xE5,0xB9,0x33,0x44,0
 #if FF_LFN_UNICODE < 0 || FF_LFN_UNICODE > 3
 #error Wrong setting of FF_LFN_UNICODE
 #endif
-static const BYTE LfnOfs[] = {1,3,5,7,9,14,16,18,20,22,24,28,30};	/* FAT: Offset of LFN characters in the directory entry */
+static const BYTE FF_WF_CONST_ADDRESS_SPACE LfnOfs[] = {1,3,5,7,9,14,16,18,20,22,24,28,30};	/* FAT: Offset of LFN characters in the directory entry */
 #define MAXDIRB(nc)	((nc + 44U) / 15 * SZDIRE)	/* exFAT: Size of directory entry block scratchpad buffer needed for the name length */
 
 #if FF_USE_LFN == 1		/* LFN enabled with static working buffer */
@@ -598,11 +598,11 @@ static const BYTE Dc950[] = TBL_DC950;
 #endif
 #elif FF_CODE_PAGE < 900	/* Static code page configuration (SBCS) */
 #define CODEPAGE FF_CODE_PAGE
-static const BYTE ExCvt[] = MKCVTBL(TBL_CT, FF_CODE_PAGE);
+static const BYTE FF_WF_CONST_ADDRESS_SPACE ExCvt[] = MKCVTBL(TBL_CT, FF_CODE_PAGE);
 
 #else					/* Static code page configuration (DBCS) */
 #define CODEPAGE FF_CODE_PAGE
-static const BYTE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
+static const BYTE FF_WF_CONST_ADDRESS_SPACE DbcTbl[] = MKCVTBL(TBL_DC, FF_CODE_PAGE);
 
 #endif
 
@@ -3447,6 +3447,7 @@ static DWORD make_rand (	/* Returns a seed value for next */
 #endif
 
 
+static const char FF_WF_CONST_ADDRESS_SPACE __str_fat32[] = "FAT32   ";
 
 /*-----------------------------------------------------------------------*/
 /* Load a sector and check if it is an FAT VBR                           */
@@ -3471,7 +3472,7 @@ static UINT check_fs (	/* 0:FAT/FAT32 VBR, 1:exFAT VBR, 2:Not FAT and valid BS, 
 #endif
 	b = fs->win[BS_JmpBoot];
 	if (b == 0xEB || b == 0xE9 || b == 0xE8) {	/* Valid JumpBoot code? (short jump, near jump or near call) */
-		if (sign == 0xAA55 && !memcmp(fs->win + BS_FilSysType32, "FAT32   ", 8)) {
+		if (sign == 0xAA55 && !memcmp(fs->win + BS_FilSysType32, __str_fat32, 8)) {
 			return 0;	/* It is an FAT32 VBR */
 		}
 		/* FAT volumes created in the early MS-DOS era lack BS_55AA and BS_FilSysType, so FAT VBR needs to be identified without them. */
@@ -5791,7 +5792,7 @@ FRESULT f_setlabel (
 	BYTE dirvn[22];
 	UINT di;
 	WCHAR wc;
-	static const char badchr[18] = "+.,;=[]" "/*:<>|\\\"\?\x7F";	/* [0..16] for FAT, [7..16] for exFAT */
+	static const char FF_WF_CONST_ADDRESS_SPACE badchr[18] = "+.,;=[]" "/*:<>|\\\"\?\x7F";	/* [0..16] for FAT, [7..16] for exFAT */
 #if FF_USE_LFN
 	DWORD dc;
 #endif
@@ -6230,8 +6231,8 @@ FRESULT f_mkfs (
 	UINT len				/* Size of working buffer [byte] */
 )
 {
-	static const WORD cst[] = {1, 4, 16, 64, 256, 512, 0};	/* Cluster size boundary for FAT volume (4K sector unit) */
-	static const WORD cst32[] = {1, 2, 4, 8, 16, 32, 0};	/* Cluster size boundary for FAT32 volume (128K sector unit) */
+	static const WORD FF_WF_CONST_ADDRESS_SPACE cst[] = {1, 4, 16, 64, 256, 512, 0};	/* Cluster size boundary for FAT volume (4K sector unit) */
+	static const WORD FF_WF_CONST_ADDRESS_SPACE cst32[] = {1, 2, 4, 8, 16, 32, 0};	/* Cluster size boundary for FAT32 volume (128K sector unit) */
 	static const MKFS_PARM defopt = {FM_ANY, 0, 0, 0, 0};	/* Default parameter */
 	BYTE fsopt, fsty, sys, pdrv, ipart;
 	BYTE *buf;
@@ -7259,7 +7260,7 @@ int f_printf (
 	DWORD val;
 #endif
 	TCHAR FF_WF_DATA_BUFFER_ADDRESS_SPACE* tp;
-	TCHAR tc, pad;
+	TCHAR chr, pad;
 	TCHAR nul = 0;
 	char digit, str[SZ_NUM_BUF];
 
