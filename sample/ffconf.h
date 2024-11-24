@@ -393,5 +393,6 @@
 */
 #define FF_WF_DATA_BUFFER_ADDRESS_SPACE
 #define FF_WF_FILINFO_ADDRESS_SPACE
+#define FF_WF_CONST_ADDRESS_SPACE
 
 /*--- End of configuration options ---*/

@@ -36,6 +36,9 @@ extern "C" {
 #if !defined(FF_WF_FILINFO_ADDRESS_SPACE)
 #define FF_WF_FILINFO_ADDRESS_SPACE
 #endif
+#if !defined(FF_WF_CONST_ADDRESS_SPACE)
+#define FF_WF_CONST_ADDRESS_SPACE
+#endif
 
 #if FF_DEFINED != FFCONF_DEF
 #error Wrong configuration file (ffconf.h).
