@@ -325,6 +325,17 @@
 */
 
 
+#define FF_WF_DISABLE_FILESYSTEM_ID 0
+/* FF_WF_DISABLE_FILESYSTEM_ID disables a mechanism FatFs uses to validate
+/  if an opened file comes from the same or different filesystem. This can
+/  save some bytes of RAM/ROM, but should only be used in programs which
+/  mount a single file system.
+/
+/  0: Leave Fsid enabled.
+/  1: Disable Fsid.
+*/
+
+
 /*---------------------------------------------------------------------------/
 / wf-fatfs Fork Configurations (Tweaks)
 /---------------------------------------------------------------------------*/

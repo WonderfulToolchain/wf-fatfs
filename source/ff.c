@@ -463,7 +463,9 @@ typedef struct {	/* Open object identifier with status */
 #error Wrong FF_VOLUMES setting
 #endif
 static FATFS *FatFs[FF_VOLUMES];	/* Pointer to the filesystem objects (logical drives) */
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 static WORD Fsid;					/* Filesystem mount ID */
+#endif
 
 #if FF_FS_RPATH != 0
 static BYTE CurrVol;				/* Current drive number set by f_chdrive() */
@@ -3695,7 +3697,9 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 	}
 
 	fs->fs_type = (BYTE)fmt;/* FAT sub-type (the filesystem object gets valid) */
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 	fs->id = ++Fsid;		/* Volume mount ID */
+#endif
 #if FF_USE_LFN == 1
 	fs->lfnbuf = LfnBuf;	/* Static LFN working buffer */
 #if FF_FS_EXFAT
@@ -3726,7 +3730,11 @@ static FRESULT validate (	/* Returns FR_OK or FR_INVALID_OBJECT */
 	FRESULT res = FR_INVALID_OBJECT;
 
 
-	if (obj && obj->fs && obj->fs->fs_type && obj->id == obj->fs->id) {	/* Test if the object is valid */
+	if (obj && obj->fs && obj->fs->fs_type
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
+		&& obj->id == obj->fs->id
+#endif
+	) {	/* Test if the object is valid */
 #if FF_FS_REENTRANT
 		if (lock_volume(obj->fs, 0)) {	/* Take a grant to access the volume */
 			if (!(disk_status(obj->fs->pdrv) & STA_NOINIT)) { /* Test if the hosting physical drive is kept initialized */
@@ -3967,7 +3975,9 @@ FRESULT f_open (
 			fp->cltbl = 0;		/* Disable fast seek mode */
 #endif
 			fp->obj.fs = fs;	/* Validate the file object */
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 			fp->obj.id = fs->id;
+#endif
 			fp->flag = mode;	/* Set file access mode */
 			fp->err = 0;		/* Clear error flag */
 			fp->sect = 0;		/* Invalidate current data sector */
@@ -4790,7 +4800,9 @@ FRESULT f_opendir (
 				}
 			}
 			if (res == FR_OK) {
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 				dp->obj.id = fs->id;
+#endif
 				res = dir_sdi(dp, 0);			/* Rewind directory */
 #if FF_FS_LOCK
 				if (res == FR_OK) {

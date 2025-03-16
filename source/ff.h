@@ -137,7 +137,9 @@ typedef struct {
 	BYTE	n_fats;			/* Number of FATs (1 or 2) */
 	BYTE	wflag;			/* win[] status (1:dirty) */
 	BYTE	fsi_flag;		/* Allocation information control (b7:disabled, b0:dirty) */
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 	WORD	id;				/* Volume mount ID */
+#endif
 	WORD	n_rootdir;		/* Number of root directory entries (FAT12/16) */
 	WORD	csize;			/* Cluster size [sectors] */
 #if FF_WF_CACHE_CLUSTER_SHIFT
@@ -183,7 +185,9 @@ typedef struct {
 
 typedef struct {
 	FATFS*	fs;				/* Pointer to the hosting volume of this object */
+#if FF_WF_DISABLE_FILESYSTEM_ID == 0
 	WORD	id;				/* Hosting volume's mount ID */
+#endif
 	BYTE	attr;			/* Object attribute */
 	BYTE	stat;			/* Object chain status (b1-0: =0:not contiguous, =2:contiguous, =3:fragmented in this session, b2:sub-directory stretched) */
 	DWORD	sclust;			/* Object data start cluster (0:no cluster or root directory) */
