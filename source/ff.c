@@ -5072,14 +5072,16 @@ FRESULT f_stat (
 #endif
 			if (dj.fn[NSFLAG] & NS_NONAME) {	/* It is origin directory */
 #if FF_WF_STAT_ORIGIN_DIRECTORY
-				fno->fname[0] = 0;
+				if (fno) {
+					fno->fname[0] = 0;
 #ifdef FF_USE_LFN
-				fno->altname[0] = 0;
+					fno->altname[0] = 0;
 #endif
-				fno->fsize = 0;
-				fno->fdate = 0;
-				fno->ftime = 0;
-				fno->fattrib = AM_DIR;
+					fno->fsize = 0;
+					fno->fdate = 0;
+					fno->ftime = 0;
+					fno->fattrib = AM_DIR;
+				}
 #else
 				res = FR_INVALID_NAME;
 #endif
