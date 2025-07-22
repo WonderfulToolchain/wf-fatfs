@@ -262,6 +262,9 @@ typedef struct {
 
 typedef struct {
 	FSIZE_t	fsize;			/* File size (invalid for directory) */
+#if FF_WF_FILINFO_LOCATION
+	DWORD	fclust;			/* File cluster */
+#endif
 	WORD	fdate;			/* Date of file modification or directory creation */
 	WORD	ftime;			/* Time of file modification or directory creation */
 #if FF_FS_CRTIME
