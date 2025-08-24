@@ -2403,12 +2403,16 @@ static void create_xdir (
 /* Read an object from the directory                                     */
 /*-----------------------------------------------------------------------*/
 
-#define DIR_READ_FILE(dp) dir_read(dp, 0)
-#define DIR_READ_LABEL(dp) dir_read(dp, 1)
+#define FLAG_DIR_READ_LABEL  0x01
+#define FLAG_DIR_READ_DOTDOT 0x02
+
+#define DIR_READ_FILE(dp) dir_read(dp, FF_WF_LIST_DOTDOT ? FLAG_DIR_READ_DOTDOT : 0)
+#define DIR_READ_LABEL(dp) dir_read(dp, FLAG_DIR_READ_LABEL)
+#define DIR_READ_FILE_NO_DOTDOT(dp) dir_read(dp, 0)
 
 static FRESULT dir_read (
 	DIR* dp,		/* Pointer to the directory object */
-	int vol			/* Filtered by 0:file/directory or 1:volume label */
+	int flags		/* Filtered by 0:file/directory or 1:volume label */
 )
 {
 	FRESULT res = FR_NO_FILE;
@@ -2417,6 +2421,7 @@ static FRESULT dir_read (
 #if FF_USE_LFN
 	BYTE ord = 0xFF, sum = 0xFF;
 #endif
+	int vol = flags & FLAG_DIR_READ_LABEL;
 
 	while (dp->sect) {
 		res = move_window(fs, dp->sect);
@@ -2444,7 +2449,7 @@ static FRESULT dir_read (
 		{	/* On the FAT/FAT32 volume */
 			dp->obj.attr = attr = dp->dir[DIR_Attr] & AM_MASK;	/* Get attribute */
 #if FF_USE_LFN		/* LFN configuration */
-			if (et == DDEM || (!FF_WF_LIST_DOTDOT && et == '.') || (int)((attr & ~AM_ARC) == AM_VOL) != vol) {	/* An entry without valid data */
+			if (et == DDEM || (!(flags & FLAG_DIR_READ_DOTDOT) && et == '.') || (int)((attr & ~AM_ARC) == AM_VOL) != vol) {	/* An entry without valid data */
 				ord = 0xFF;
 			} else {
 				if (attr == AM_LFN) {	/* An LFN entry is found */
@@ -2463,7 +2468,7 @@ static FRESULT dir_read (
 				}
 			}
 #else		/* Non LFN configuration */
-			if (et != DDEM && (FF_WF_LIST_DOTDOT || et != '.') && attr != AM_LFN && (int)((attr & ~AM_ARC) == AM_VOL) == vol) {	/* Is it a valid entry? */
+			if (et != DDEM && ((flags & FLAG_DIR_READ_DOTDOT) || et != '.') && attr != AM_LFN && (int)((attr & ~AM_ARC) == AM_VOL) == vol) {	/* Is it a valid entry? */
 				break;
 			}
 #endif
@@ -5314,7 +5319,7 @@ FRESULT f_unlink (
 #endif
 					res = dir_sdi(&sdj, 0);
 					if (res == FR_OK) {
-						res = DIR_READ_FILE(&sdj);			/* Check if the sub-directory is empty */
+						res = DIR_READ_FILE_NO_DOTDOT(&sdj);	/* Check if the sub-directory is empty */
 						if (res == FR_OK) res = FR_DENIED;	/* Not empty? */
 						if (res == FR_NO_FILE) res = FR_OK;	/* Empty? */
 					}
