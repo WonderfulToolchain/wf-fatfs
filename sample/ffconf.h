@@ -352,6 +352,9 @@
 /
 /  0: "." and ".." directory entries are hidden.
 /  1: "." and ".." directory entries are exposed.
+/
+/  Note that, as exFAT does not store such entries on-disk, this setting does
+/  not emulate these entires on exFAT file systems.
 */
 
 
