@@ -2977,6 +2977,13 @@ static int pattern_match (	/* 0:mismatched, 1:matched */
 /* Pick a top segment and create the object name in directory form       */
 /*-----------------------------------------------------------------------*/
 
+#if FF_USE_LFN
+static const char FF_WF_CONST_ADDRESS_SPACE lfn_illegal_characters[] = "*:<>|\"\?\x7F";
+#else
+static const char FF_WF_CONST_ADDRESS_SPACE sfn_illegal_characters2[] = "*+,:;<=>[]|\"\?\x7F";
+#endif
+static const char FF_WF_CONST_ADDRESS_SPACE sfn_illegal_characters[] = "+,;=[]";
+
 static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not create */
 	DIR* dp,					/* Pointer to the directory object */
 	const TCHAR** path			/* Pointer to pointer to the segment in the path string */
@@ -2999,7 +3006,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 		if (uc >= 0x10000) lfn[di++] = (WCHAR)(uc >> 16);	/* Store high surrogate if needed */
 		wc = (WCHAR)uc;
 		if (wc < ' ' || IsSeparator(wc)) break;	/* Break if end of the path or a separator is found */
-		if (wc < 0x80 && strchr("*:<>|\"\?\x7F", (int)wc)) return FR_INVALID_NAME;	/* Reject illegal characters for LFN */
+		if (wc < 0x80 && strchr(lfn_illegal_characters, (int)wc)) return FR_INVALID_NAME;	/* Reject illegal characters for LFN */
 		if (di >= FF_MAX_LFN) return FR_INVALID_NAME;	/* Reject too long name */
 		lfn[di++] = wc;				/* Store the Unicode character */
 	}
@@ -3083,7 +3090,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 			}
 			dp->fn[i++] = (BYTE)(wc >> 8);	/* Put 1st byte */
 		} else {						/* SBC */
-			if (wc == 0 || strchr("+,;=[]", (int)wc)) {	/* Replace illegal characters for SFN */
+			if (wc == 0 || strchr(sfn_illegal_characters, (int)wc)) {	/* Replace illegal characters for SFN */
 				wc = '_'; cf |= NS_LOSS | NS_LFN;/* Lossy conversion */
 			} else {
 				if (IsUpper(wc)) {		/* ASCII upper case? */
@@ -3168,7 +3175,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 			sfn[i++] = c;
 			sfn[i++] = d;
 		} else {						/* SBC */
-			if (strchr("*+,:;<=>[]|\"\?\x7F", (int)c)) return FR_INVALID_NAME;	/* Reject illegal chrs for SFN */
+			if (strchr(sfn_illegal_characters2, (int)c)) return FR_INVALID_NAME;	/* Reject illegal chrs for SFN */
 			if (IsLower(c)) c -= 0x20;	/* To upper */
 			sfn[i++] = c;
 		}
@@ -3450,6 +3457,9 @@ static DWORD make_rand (	/* Returns a seed value for next */
 
 
 static const char FF_WF_CONST_ADDRESS_SPACE __str_fat32[] = "FAT32   ";
+#if FF_FS_EXFAT
+static const char FF_WF_CONST_ADDRESS_SPACE __str_jmpboot_exfat[] = "\xEB\x76\x90" "EXFAT   ";
+#endif
 
 /*-----------------------------------------------------------------------*/
 /* Load a sector and check if it is an FAT VBR                           */
@@ -3470,7 +3480,7 @@ static UINT check_fs (	/* 0:FAT/FAT32 VBR, 1:exFAT VBR, 2:Not FAT and valid BS, 
 	if (move_window(fs, sect) != FR_OK) return 4;	/* Load the boot sector */
 	sign = lda_16(fs->win + BS_55AA);
 #if FF_FS_EXFAT
-	if (sign == 0xAA55 && !memcmp(fs->win + BS_JmpBoot, "\xEB\x76\x90" "EXFAT   ", 11)) return 1;	/* It is an exFAT VBR */
+	if (sign == 0xAA55 && !memcmp(fs->win + BS_JmpBoot, __str_jmpboot_exfat, 11)) return 1;	/* It is an exFAT VBR */
 #endif
 	b = fs->win[BS_JmpBoot];
 	if (b == 0xEB || b == 0xE9 || b == 0xE8) {	/* Valid JumpBoot code? (short jump, near jump or near call) */
@@ -6226,6 +6236,10 @@ static FRESULT create_partition (
 }
 
 
+static const char FF_WF_CONST_ADDRESS_SPACE __str_jmpboot_fat[] = "\xEB\xFE\x90" "MSDOS5.0";
+static const char FF_WF_CONST_ADDRESS_SPACE __str_vollabel_fat[] = "NO NAME    FAT     ";
+static const char FF_WF_CONST_ADDRESS_SPACE __str_vollabel_fat32[] = "NO NAME    FAT32   ";
+
 
 FRESULT f_mkfs (
 	const TCHAR* path,		/* Logical drive number */
@@ -6491,7 +6505,7 @@ FRESULT f_mkfs (
 		for (n = 0; n < 2; n++) {
 			/* Main record (+0) */
 			memset(buf, 0, ss);
-			memcpy(buf + BS_JmpBoot, "\xEB\x76\x90" "EXFAT   ", 11);	/* Boot jump code (x86), OEM name */
+			memcpy(buf + BS_JmpBoot, __str_jmpboot_exfat, 11);	/* Boot jump code (x86), OEM name */
 			st_64(buf + BPB_VolOfsEx, b_vol);						/* Volume offset in the physical drive [sector] */
 			st_64(buf + BPB_TotSecEx, sz_vol);						/* Volume size [sector] */
 			st_32(buf + BPB_FatOfsEx, (DWORD)(b_fat - b_vol));		/* FAT offset [sector] */
@@ -6613,7 +6627,7 @@ FRESULT f_mkfs (
 #endif
 		/* Create FAT VBR */
 		memset(buf, 0, ss);
-		memcpy(buf + BS_JmpBoot, "\xEB\xFE\x90" "MSDOS5.0", 11);	/* Boot jump code (x86), OEM name */
+		memcpy(buf + BS_JmpBoot, __str_jmpboot_fat, 11);	/* Boot jump code (x86), OEM name */
 		st_16(buf + BPB_BytsPerSec, ss);				/* Sector size [byte] */
 		buf[BPB_SecPerClus] = (BYTE)pau;				/* Cluster size [sector] */
 		st_16(buf + BPB_RsvdSecCnt, (WORD)sz_rsv);		/* Size of reserved area */
@@ -6636,13 +6650,13 @@ FRESULT f_mkfs (
 			st_16(buf + BPB_BkBootSec32, 6);			/* Offset of backup VBR (VBR + 6) */
 			buf[BS_DrvNum32] = 0x80;					/* Drive number (for int13) */
 			buf[BS_BootSig32] = 0x29;					/* Extended boot signature */
-			memcpy(buf + BS_VolLab32, "NO NAME    " "FAT32   ", 19);	/* Volume label, FAT signature */
+			memcpy(buf + BS_VolLab32, __str_vollabel_fat32, 19);	/* Volume label, FAT signature */
 		} else {
 			st_32(buf + BS_VolID, vsn);					/* VSN */
 			st_16(buf + BPB_FATSz16, (WORD)sz_fat);		/* FAT size [sector] */
 			buf[BS_DrvNum] = 0x80;						/* Drive number (for int13) */
 			buf[BS_BootSig] = 0x29;						/* Extended boot signature */
-			memcpy(buf + BS_VolLab, "NO NAME    " "FAT     ", 19);	/* Volume label, FAT signature */
+			memcpy(buf + BS_VolLab, __str_vollabel_fat, 19);	/* Volume label, FAT signature */
 		}
 		st_16(buf + BS_55AA, 0xAA55);					/* Signature (offset is fixed here regardless of sector size) */
 		if (disk_write(pdrv, buf, b_vol, 1) != RES_OK) LEAVE_MKFS(FR_DISK_ERR);	/* Write it to the VBR sector */
