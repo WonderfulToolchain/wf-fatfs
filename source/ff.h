@@ -22,6 +22,8 @@
 #ifndef FF_DEFINED
 #define FF_DEFINED	80386	/* Revision ID */
 
+#include <wonderful.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -342,8 +344,8 @@ typedef enum {
 
 FRESULT f_open (FIL* fp, const TCHAR* path, BYTE mode);				/* Open or create a file */
 FRESULT f_close (FIL* fp);											/* Close an open file object */
-FRESULT f_read (FIL* fp, void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btr, UINT* br);			/* Read data from the file */
-FRESULT f_write (FIL* fp, const void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btw, UINT* bw);	/* Write data to the file */
+FRESULT f_read (FIL* fp, void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btr, UINT __wf_cram* br);			/* Read data from the file */
+FRESULT f_write (FIL* fp, const void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff, UINT btw, UINT __wf_cram* bw);	/* Write data to the file */
 FRESULT f_lseek (FIL* fp, FSIZE_t ofs);								/* Move file pointer of the file object */
 FRESULT f_truncate (FIL* fp);										/* Truncate the file */
 FRESULT f_sync (FIL* fp);											/* Flush cached data of the writing file */

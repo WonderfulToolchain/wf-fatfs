@@ -20,6 +20,7 @@
 
 
 #include <string.h>
+#include <wonderful.h>
 #include "ff.h"			/* Basic definitions and declarations of API */
 #include "diskio.h"		/* Declarations of MAI */
 
@@ -794,7 +795,7 @@ static int dbc_2nd (BYTE c)
 
 /* Get a Unicode code point from the TCHAR string in defined API encodeing */
 static DWORD tchar2uni (	/* Returns a character in UTF-16 encoding (>=0x10000 on surrogate pair, 0xFFFFFFFF on decode error) */
-	const TCHAR** str		/* Pointer to pointer to TCHAR string in configured encoding */
+	const TCHAR* __wf_cram* str		/* Pointer to pointer to TCHAR string in configured encoding */
 )
 {
 	DWORD uc;
@@ -1243,7 +1244,7 @@ static LBA_t clst2sect (	/* !=0:Sector number, 0:Failed (invalid cluster#) */
 /*-----------------------------------------------------------------------*/
 
 static DWORD get_fat (		/* 0xFFFFFFFF:Disk error, 1:Internal error, 2..0x7FFFFFFF:Cluster status */
-	FFOBJID* obj,	/* Corresponding object */
+	FFOBJID __wf_cram* obj,	/* Corresponding object */
 	DWORD clst		/* Cluster number to get the value */
 )
 {
@@ -1466,7 +1467,7 @@ static FRESULT change_bitmap (
 /*---------------------------------------------*/
 
 static FRESULT fill_first_frag (
-	FFOBJID* obj	/* Pointer to the corresponding object */
+	FFOBJID __wf_cram* obj	/* Pointer to the corresponding object */
 )
 {
 	FRESULT res;
@@ -1489,7 +1490,7 @@ static FRESULT fill_first_frag (
 /*---------------------------------------------*/
 
 static FRESULT fill_last_frag (
-	FFOBJID* obj,	/* Pointer to the corresponding object */
+	FFOBJID __wf_cram* obj,	/* Pointer to the corresponding object */
 	DWORD lcl,		/* Last cluster of the fragment */
 	DWORD term		/* Value to set the last FAT entry */
 )
@@ -1515,7 +1516,7 @@ static FRESULT fill_last_frag (
 /*-----------------------------------------------------------------------*/
 
 static FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
-	FFOBJID* obj,		/* Corresponding object */
+	FFOBJID __wf_cram* obj,		/* Corresponding object */
 	DWORD clst,			/* Cluster to remove a chain from */
 	DWORD pclst			/* Previous cluster of clst (0 if entire chain) */
 )
@@ -1610,7 +1611,7 @@ static FRESULT remove_chain (	/* FR_OK(0):succeeded, !=0:error */
 /*-----------------------------------------------------------------------*/
 
 static DWORD create_chain (	/* 0:No free cluster, 1:Internal error, 0xFFFFFFFF:Disk error, >=2:New cluster# */
-	FFOBJID* obj,		/* Corresponding object */
+	FFOBJID __wf_cram* obj,		/* Corresponding object */
 	DWORD clst			/* Cluster# to stretch, 0:Create a new chain */
 )
 {
@@ -1789,7 +1790,7 @@ static FRESULT dir_clear (	/* Returns FR_OK or FR_DISK_ERR */
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_sdi (	/* FR_OK(0):succeeded, !=0:error */
-	DIR* dp,		/* Pointer to directory object */
+	DIR __wf_cram* dp,		/* Pointer to directory object */
 	DWORD ofs		/* Offset of directory table */
 )
 {
@@ -1837,7 +1838,7 @@ static FRESULT dir_sdi (	/* FR_OK(0):succeeded, !=0:error */
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DENIED:Could not stretch */
-	DIR* dp,				/* Pointer to the directory object */
+	DIR __wf_cram* dp,				/* Pointer to the directory object */
 	int stretch				/* 0: Do not stretch table, 1: Stretch table if needed */
 )
 {
@@ -1898,7 +1899,7 @@ static FRESULT dir_next (	/* FR_OK(0):succeeded, FR_NO_FILE:End of table, FR_DEN
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_alloc (	/* FR_OK(0):succeeded, !=0:error */
-	DIR* dp,				/* Pointer to the directory object */
+	DIR __wf_cram* dp,				/* Pointer to the directory object */
 	UINT n_ent				/* Number of contiguous entries to allocate */
 )
 {
@@ -2088,8 +2089,8 @@ static void put_lfn (
 /*-----------------------------------------------------------------------*/
 
 static void gen_numname (
-	BYTE* dst,			/* Pointer to the buffer to store numbered SFN */
-	const BYTE* src,	/* Pointer to SFN in directory form */
+	BYTE __wf_cram* dst,			/* Pointer to the buffer to store numbered SFN */
+	const BYTE __wf_cstack* src,	/* Pointer to SFN in directory form */
 	const WCHAR* lfn,	/* Pointer to LFN */
 	WORD seq			/* Sequence number */
 )
@@ -2145,7 +2146,7 @@ static void gen_numname (
 /*-----------------------------------------------------------------------*/
 
 static BYTE sum_sfn (
-	const BYTE* dir		/* Pointer to the SFN entry */
+	const BYTE __wf_cram* dir		/* Pointer to the SFN entry */
 )
 {
 	BYTE sum = 0;
@@ -2274,7 +2275,7 @@ static FRESULT load_xdir (	/* FR_INT_ERR: invalid entry block */
 /*------------------------------------------------------------------*/
 
 static void init_alloc_info (
-	FFOBJID* dobj,	/* Object allocation information to be initialized */
+	FFOBJID __wf_cram* dobj,	/* Object allocation information to be initialized */
 	DIR* sdir		/* Additional source about containing direcotry */
 )
 {
@@ -2301,7 +2302,7 @@ static void init_alloc_info (
 
 static FRESULT load_obj_xdir (
 	DIR* dp,			/* Blank directory object to be used to access containing directory */
-	const FFOBJID* obj	/* Object with its containing directory information */
+	const FFOBJID __wf_cram* obj	/* Object with its containing directory information */
 )
 {
 	FRESULT res;
@@ -2413,7 +2414,7 @@ static void create_xdir (
 #define DIR_READ_FILE_NO_DOTDOT(dp) dir_read(dp, 0)
 
 static FRESULT dir_read (
-	DIR* dp,		/* Pointer to the directory object */
+	DIR __wf_cram* dp,		/* Pointer to the directory object */
 	int flags		/* Filtered by 0:file/directory or 1:volume label */
 )
 {
@@ -2496,7 +2497,7 @@ static FRESULT dir_read (
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_find (	/* FR_OK(0):succeeded, !=0:error */
-	DIR* dp					/* Pointer to the directory object with the file name */
+	DIR __wf_cram* dp					/* Pointer to the directory object with the file name */
 )
 {
 	FRESULT res;
@@ -2578,7 +2579,7 @@ static FRESULT dir_find (	/* FR_OK(0):succeeded, !=0:error */
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_register (	/* FR_OK:succeeded, FR_DENIED:no free entry or too many SFN collision, FR_DISK_ERR:disk error */
-	DIR* dp						/* Target directory with object name to be created */
+	DIR __wf_cram* dp						/* Target directory with object name to be created */
 )
 {
 	FRESULT res;
@@ -2691,7 +2692,7 @@ static FRESULT dir_register (	/* FR_OK:succeeded, FR_DENIED:no free entry or too
 /*-----------------------------------------------------------------------*/
 
 static FRESULT dir_remove (	/* FR_OK:Succeeded, FR_DISK_ERR:A disk error */
-	DIR* dp					/* Directory object pointing the entry to be removed */
+	DIR __wf_cram* dp					/* Directory object pointing the entry to be removed */
 )
 {
 	FRESULT res;
@@ -2737,7 +2738,7 @@ static FRESULT dir_remove (	/* FR_OK:Succeeded, FR_DISK_ERR:A disk error */
 /*-----------------------------------------------------------------------*/
 
 static void get_fileinfo (
-	DIR* dp,			/* Pointer to the directory object */
+	DIR __wf_cram* dp,			/* Pointer to the directory object */
 	FILINFO FF_WF_FILINFO_ADDRESS_SPACE* fno		/* Pointer to the file information to be filled */
 )
 {
@@ -2985,8 +2986,8 @@ static const char FF_WF_CONST_ADDRESS_SPACE sfn_illegal_characters2[] = "*+,:;<=
 static const char FF_WF_CONST_ADDRESS_SPACE sfn_illegal_characters[] = "+,;=[]";
 
 static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not create */
-	DIR* dp,					/* Pointer to the directory object */
-	const TCHAR** path			/* Pointer to pointer to the segment in the path string */
+	DIR __wf_cram* dp,					/* Pointer to the directory object */
+	const TCHAR* __wf_cstack* path			/* Pointer to pointer to the segment in the path string */
 )
 {
 #if FF_USE_LFN		/* LFN configuration */
@@ -3198,7 +3199,7 @@ static FRESULT create_name (	/* FR_OK: successful, FR_INVALID_NAME: could not cr
 /*-----------------------------------------------------------------------*/
 
 static FRESULT follow_path (	/* FR_OK(0): successful, !=0: error code */
-	DIR* dp,					/* Directory object to return last directory and found object */
+	DIR __wf_cram* dp,					/* Directory object to return last directory and found object */
 	const TCHAR* path			/* Full-path string to find a file or directory */
 )
 {
@@ -3317,7 +3318,7 @@ static FRESULT follow_path (	/* FR_OK(0): successful, !=0: error code */
 /*-----------------------------------------------------------------------*/
 
 static int get_ldnumber (	/* Returns logical drive number (-1:invalid drive number or null pointer) */
-	const TCHAR** path		/* Pointer to pointer to the path name */
+	const TCHAR* __wf_cram* path		/* Pointer to pointer to the path name */
 )
 {
 	const TCHAR *tp;
@@ -3562,8 +3563,8 @@ static UINT find_volume (	/* Returns BS status found in the hosting drive */
 /*-----------------------------------------------------------------------*/
 
 static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
-	const TCHAR** path,			/* Pointer to pointer to the path name (drive number) */
-	FATFS** rfs,				/* Pointer to pointer to the found filesystem object */
+	const TCHAR* __wf_cram* path,			/* Pointer to pointer to the path name (drive number) */
+	FATFS* __wf_cram* rfs,				/* Pointer to pointer to the found filesystem object */
 	BYTE mode					/* Desiered access mode to check write protection */
 )
 {
@@ -3809,8 +3810,8 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 /*-----------------------------------------------------------------------*/
 
 static FRESULT validate (	/* Returns FR_OK or FR_INVALID_OBJECT */
-	FFOBJID* obj,			/* Pointer to the FFOBJID, the 1st member in the FIL/DIR structure, to check validity */
-	FATFS** rfs				/* Pointer to pointer to the owner filesystem object to return */
+	FFOBJID __wf_cram* obj,			/* Pointer to the FFOBJID, the 1st member in the FIL/DIR structure, to check validity */
+	FATFS* __wf_cram* rfs				/* Pointer to pointer to the owner filesystem object to return */
 )
 {
 	FRESULT res = FR_INVALID_OBJECT;
@@ -4113,7 +4114,7 @@ FRESULT f_read (
 	FIL* fp, 	/* Open file to be read */
 	void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff,	/* Data buffer to store the read data */
 	UINT btr,	/* Number of bytes to read */
-	UINT* br	/* Number of bytes read */
+	UINT __wf_cram* br	/* Number of bytes read */
 )
 {
 	FRESULT res;
@@ -4239,7 +4240,7 @@ FRESULT f_write (
 	FIL* fp,			/* Open file to be written */
 	const void FF_WF_DATA_BUFFER_ADDRESS_SPACE* buff,	/* Data to be written */
 	UINT btw,			/* Number of bytes to write */
-	UINT* bw			/* Number of bytes written */
+	UINT __wf_cram* bw			/* Number of bytes written */
 )
 {
 	FRESULT res;
@@ -4602,7 +4603,7 @@ FRESULT f_getcwd (
 
 
 	buff[0] = 0;	/* A null str to get current drive */
-	res = mount_volume((const TCHAR**)&buff, &fs, 0);
+	res = mount_volume((const TCHAR* __wf_cram*)&buff, &fs, 0);
 	if (res == FR_OK) {
 		dj.obj.fs = fs;
 		INIT_NAMEBUFF(fs);
